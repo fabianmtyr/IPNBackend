@@ -6,8 +6,9 @@ var SALT_WORK_FACTOR = 10;
 
 // Mongoose
 var userSchema = new mongoose.Schema({
-  username: String,
-  password: String
+  email: String,
+  password: String,
+  name: String
 });
 
 var UserModel = mongoose.model('User', userSchema);
@@ -28,10 +29,10 @@ userSchema.pre('save', function(next){
 });
 
 router.post("/register", function(req, res) {
-  console.log("registrando");
   var newUser = new UserModel ({
-    username: req.body.username,
-    password: req.body.password
+    email: req.body.email,
+    password: req.body.password,
+    name: req.body.name
   });
   newUser.save(function (err) {
     if (err) {
@@ -43,15 +44,11 @@ router.post("/register", function(req, res) {
 });
 
 router.post("/login", function(req, res) {
-  console.log("login in");
-  UserModel.findOne({username: req.body.username}, function(err, user) {
+  UserModel.findOne({email: req.body.email}, function(err, user) {
     if (err) {
       throw err;
     } else {
-      console.log(user.password);
-      console.log(req.body.password)
       bcrypt.compare(req.body.password, user.password).then(function(result) {
-        console.log(result);
         res.status(200).json(result);
       });
     }

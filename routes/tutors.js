@@ -8,7 +8,10 @@ var tutorSchema = new mongoose.Schema({
     first: String,
     last: String
   },
-  matricula: String
+  matricula: String, 
+  email: String,
+  grades: Number,
+  course: Number
 });
 
 var TutorModel = mongoose.model('Tutors', tutorSchema);
@@ -25,10 +28,12 @@ router.get("/list", function(req, res) {
 });
 
 router.post("/new", function(req, res) {
-  console.log("hola");
   var newTutor = new TutorModel ({
     name: {first: req.body.name.first, last: req.body.name.last},
-    matricula: req.body.matricula
+    matricula: req.body.matricula,
+    email: req.body.email,
+    grades: undefined,
+    course: undefined
   });
   newTutor.save(function (err) {
     if (err) {
