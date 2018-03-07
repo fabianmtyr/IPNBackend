@@ -1,32 +1,34 @@
 var express = require("express");
 var bodyParser = require("body-parser");
-var mongodb = require("mongodb");
-var ObjectID = mongodb.ObjectID;
+var mongoose = require("mongoose");
 
-var TUTORS = "tutors";
+var user = require("./routes/user.js");
+var tutors = require("./routes/tutors.js");
+
 
 var app = express();
 app.use(bodyParser.json());
 
-// Create a database variable outside of the database connection callback to reuse the connection pool in your app.
-var db;
+// Configs
+var uristring =
+    process.env.MONGOLAB_URI ||
+    process.env.MONGODB_URI || 
+    process.env.MONGOHQ_URL ||
+    'mongodb://localhost/ipn';
 
-// Connect to the database before starting the application server.
-mongodb.MongoClient.connect(process.env.MONGODB_URI || 'mongodb://localhost/HelloMongoDb', function (err, database) {
+var theport = process.env.PORT || 8080;
+
+mongoose.connect(uristring, function (err, res) {
   if (err) {
-    console.log(err);
-    process.exit(1);
+  console.log ('ERROR connecting to: ' + uristring + '. ' + err);
+  } else {
+  console.log ('Succeeded connected to: ' + uristring);
   }
+});
 
-  // Save database object from the callback for reuse.
-  db = database;
-  console.log("Database connection ready");
-
-  // Initialize the app.
-  var server = app.listen(process.env.PORT || 8080, function () {
-    var port = server.address().port;
-    console.log("App now running on port", port);
-  });
+var server = app.listen(theport, function() {
+  var port = server.address().port;
+  console.log("App now running on port", port);
 });
 
 // CONTACTS API ROUTES BELOW
@@ -36,26 +38,8 @@ function handleError(res, reason, message, code) {
   res.status(code || 500).json({"error": message});
 }
 
-/*  "/api/contacts"
- *    GET: finds all contacts
- *    POST: creates a new contact
- */
+// app.use('/', index);
+app.use('/tutors', tutors);
+app.use('/user', user);
 
-app.get("/api/tutors", function(req, res) {
-  db.collection(TUTORS).find({}).toArray(function(err, result) {
-    if (err) throw err;
-    console.log(result);
-    res.status(201).json(result);
-  });
-});
-
-app.post("/api/tutors", function(req, res) {
-  var newTutor = req.body;
-  db.collection(TUTORS).insertOne(newTutor, function(err, doc) {
-    if (err) {
-      handleError(res, err.message, "Failed to create new tutor.");
-    } else {
-      res.status(201).json(doc.ops[0]);
-    }
-  });
-});
+module.exports = app;
