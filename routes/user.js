@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
-var bcrypt = require('bcrypt');
+var bcrypt = require('bcrypt-nodejs');
 var SALT_WORK_FACTOR = 10;
 
 // Mongoose
@@ -14,12 +14,13 @@ var userSchema = new mongoose.Schema({
 var UserModel = mongoose.model('User', userSchema);
 
 userSchema.pre('save', function(next){
+  console.log("aqui");
   var user = this;
   if (!user.isModified('password')) return next;
 
   bcrypt.genSalt(SALT_WORK_FACTOR, function(err, salt) {
     if (err) return next(err);
-    bcrypt.hash(user.password, salt, function(err, hash) {
+    bcrypt.hash(user.password, salt, null, function(err, hash) {
       if (err) return next(err);
 
       user.password = hash;
@@ -29,6 +30,7 @@ userSchema.pre('save', function(next){
 });
 
 router.post("/register", function(req, res) {
+  console.log("hola");
   var newUser = new UserModel ({
     email: req.body.email,
     password: req.body.password,
