@@ -50,7 +50,7 @@ router.post("/login", function(req, res) {
     if (err) {
       throw err;
     } else {
-      bcrypt.compare(req.body.password, user.password).then(function(result) {
+      bcrypt.compare(req.body.password, user.password, function(error, result) {
         res.status(200).json(result);
       });
     }
