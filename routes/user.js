@@ -29,7 +29,7 @@ userSchema.pre('save', function(next){
   });
 });
 
-router.post("/register", function(req, res) {
+router.post("/register", function(req, res, next) {
   console.log("hola");
   var newUser = new UserModel ({
     email: req.body.email,
@@ -45,7 +45,7 @@ router.post("/register", function(req, res) {
   });
 });
 
-router.post("/login", function(req, res) {
+router.post("/login", function(req, res, next) {
   UserModel.findOne({email: req.body.email}, function(err, user) {
     if (err) {
       throw err;

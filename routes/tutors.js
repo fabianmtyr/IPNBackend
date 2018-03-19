@@ -16,7 +16,7 @@ var tutorSchema = new mongoose.Schema({
 
 var TutorModel = mongoose.model('Tutors', tutorSchema);
 
-router.get("/list", function(req, res) {
+router.get("/list", function(req, res, next) {
   TutorModel.find({}, function(err, result) {
     if (err) {
       throw err;
@@ -27,7 +27,7 @@ router.get("/list", function(req, res) {
   });
 });
 
-router.post("/new", function(req, res) {
+router.post("/new", function(req, res, next) {
   var newTutor = new TutorModel ({
     name: {first: req.body.name.first, last: req.body.name.last},
     matricula: req.body.matricula,
