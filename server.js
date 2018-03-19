@@ -4,10 +4,11 @@ var mongoose = require("mongoose");
 
 var user = require("./routes/user.js");
 var tutors = require("./routes/tutors.js");
-
+var cors = require("cors");
 
 var app = express();
 app.use(bodyParser.json());
+app.use(cors({credentials: true, origin: true}));
 
 // Configs
 var uristring =
@@ -59,10 +60,10 @@ app.use('/user', user);
 //   res.status(404).json("Not found");
 // });
 
-app.all('/', function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "X-Requested-With");
-  next()
-});
+// app.all('/', function(req, res, next) {
+//   res.header("Access-Control-Allow-Origin", "*");
+//   res.header("Access-Control-Allow-Headers", "X-Requested-With");
+//   next()
+// });
 
 module.exports = app;
