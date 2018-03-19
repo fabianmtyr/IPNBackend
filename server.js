@@ -42,18 +42,12 @@ function handleError(res, reason, message, code) {
 app.use('/tutors', tutors);
 app.use('/user', user);
 
-app.use((req, res, next) => {
-  req.header("Access-Control-Allow-Origin", "*");
-  req.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,PATCH');
-  req.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, Content-Length");
-  req.header("Access-Control-Allow-Credentials",  "true");
-
-  if ('OPTIONS' === req.method){
-    res.send(200);
-  }
-  else {
-    next();
-  }
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", '*');
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+  res.header("Access-Control-Allow-Headers", 'Origin,X-Requested-With,Content-Type,Accept,content-type,application/json');
+  next();
 });
 
 app.use(function(_, res, __) {
