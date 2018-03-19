@@ -1,14 +1,13 @@
 {
-  "name": "node-js-getting-started",
+  "name": "ipn-backend",
   "version": "0.3.0",
-  "description": "A sample Node.js app using Express 4",
+  "description": "Backend para el servicio de inscripcion de tutores de Prepanet",
   "engines": {
     "node": "7.x"
   },
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "test": "node test.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
@@ -24,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/heroku/node-js-getting-started"
+    "url": "https://github.com/fabianmtyr/IPNBackend"
   },
   "keywords": [
     "node",
