@@ -13,8 +13,8 @@ var userSchema = new mongoose.Schema({
 
 var UserModel = mongoose.model('User', userSchema);
 
+// Encrypts password
 userSchema.pre('save', function(next){
-  console.log("aqui");
   var user = this;
   if (!user.isModified('password')) return next;
 
@@ -29,30 +29,37 @@ userSchema.pre('save', function(next){
   });
 });
 
+// Adds new user
 router.post("/register", function(req, res, next) {
-  console.log("hola");
   var newUser = new UserModel ({
     email: req.body.email,
     password: req.body.password,
     name: req.body.name
   });
-  newUser.save(function (err) {
-    if (err) {
-      console.log("Error on save!");
+
+  newUser.save(function (error) {
+    if (error) {
+      res.status(500).send("There was an error saving the new user.");
     } else {
-      res.status(201).json(newUser);
+      res.status(201).send(newUser);
     }
   });
 });
 
+// Log in
 router.post("/login", function(req, res, next) {
-  UserModel.findOne({email: req.body.email}, function(err, user) {
+  UserModel.findOne({'email': req.body.email}, function(err, user) {
     if (err) {
-      throw err;
+      res.status(500).send("Error on find");
     } else {
-      bcrypt.compare(req.body.password, user.password, function(error, result) {
-        res.status(200).json(result);
-      });
+      if (user) {
+        bcrypt.compare(req.body.password, user.password, function(error, result) {
+          res.status(200).send(result);
+        });
+      }
+      else {
+        res.status(200).send("Username not found.");
+      }
     }
   });
 });
