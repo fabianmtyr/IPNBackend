@@ -48,17 +48,23 @@ router.post("/register", function(req, res, next) {
 
 // Log in
 router.post("/login", function(req, res, next) {
+  var userobj = {
+    email: false,
+    password:false
+  };
   UserModel.findOne({'email': req.body.email}, function(err, user) {
     if (err) {
       res.status(500).send("Error on find");
     } else {
       if (user) {
+        userobj.email = true;
         bcrypt.compare(req.body.password, user.password, function(error, result) {
-          res.status(200).send(result);
+          userobj.password = result;
+          res.status(200).send(userobj);
         });
       }
       else {
-        res.status(200).send("Username not found.");
+        res.status(200).send(userobj);
       }
     }
   });
