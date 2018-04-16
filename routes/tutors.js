@@ -19,6 +19,7 @@ var tutorSchema = new mongoose.Schema({
 
 var TutorModel = mongoose.model('Tutors', tutorSchema);
 
+// Spaces (Plazas de tutores) schema
 var spacesSchema = new mongoose.Schema({
   campus: String,
   tutors: Number,
@@ -27,19 +28,20 @@ var spacesSchema = new mongoose.Schema({
 
 var SpacesModel = mongoose.model('Spaces', spacesSchema);
 
-// Get all tutors
+// ####### TUTOR ROUTES #######
+
+// Get a list of all available tutors
 router.get("/list", function(req, res, next) {
   TutorModel.find({}, function(error, result) {
     if (error) {
       res.status(500).send("There was an error finding the documents.");
     } else {
-      // console.log(result);
       res.status(200).send(result);
     }
   });
 });
 
-// Add new tutor
+// Creates a new tutor in the db
 router.post("/new", function(req, res, next) {
   var newTutor = new TutorModel ({
     name: {first: req.body.name.first, last: req.body.name.last},
@@ -52,16 +54,29 @@ router.post("/new", function(req, res, next) {
     isTutor: false
   });
 
-  newTutor.save(function (error) {
+  // Look for an existing tutor with the same matricula, if it already exists, don't save.
+  TutorModel.findOne({'matricula': req.body.matricula}, function(error, response) {
     if (error) {
-      res.status(500).send("There was an error saving the document.");
-    } else {
-      res.status(201).send(newTutor);
+      res.status(500).send("There was an error on the database.");
+    }
+    else {
+      if (response) {
+        res.status(200).send("A user with the same id number already exists.");
+      }
+      else {
+        newTutor.save(function (error) {
+          if (error) {
+            res.status(500).send("There was an error saving the document.");
+          } else {
+            res.status(201).send(newTutor);
+          }
+        });
+      }
     }
   });
 });
 
-// Edit an existing based on "matricula"
+// Edit an existing based on "matricula".
 router.post("/edit", function(req, res, next) {
   // more than one object
   if (req.body instanceof Array) {
