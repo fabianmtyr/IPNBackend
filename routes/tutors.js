@@ -12,7 +12,9 @@ var tutorSchema = new mongoose.Schema({
   email: String,
   grades: Number,
   course: Number,
-  campus: String
+  campus: String,
+  hasGrades: Boolean,
+  isTutor: Boolean
 });
 
 var TutorModel = mongoose.model('Tutors', tutorSchema);
@@ -44,7 +46,10 @@ router.post("/new", function(req, res, next) {
     matricula: req.body.matricula,
     email: req.body.email,
     grades: undefined,
-    course: undefined
+    course: undefined,
+    campus: undefined,
+    hasGrades: false,
+    isTutor: false
   });
 
   newTutor.save(function (error) {
@@ -58,25 +63,40 @@ router.post("/new", function(req, res, next) {
 
 // Edit an existing based on "matricula"
 router.post("/edit", function(req, res, next) {
-  var tutor = {
-    name: {first: req.body.name.first, last: req.body.name.last},
-    matricula: req.body.matricula,
-    email: req.body.email,
-    grades: req.body.grades,
-    course: req.body.course,
-    campus: req.body.campus
-  };
-
-  TutorModel.findOneAndUpdate({'matricula': req.body.matricula}, 
-    tutor,
-    {new: true,fields: "name matricula email grades course campus"},
-    function(error, result) {
-    if (error) {
-      res.status(500).send("There was an error updating the document.");
-    } else {
-      res.status(200).send(result);
+  // more than one object
+  if (req.body instanceof Array) {
+    var updating = true;
+    var i = 0;
+    while(updating && i < req.body.length) {
+      var element = req.body[i];
+      TutorModel.findOneAndUpdate({'matricula': element.matricula}, 
+        router.createUpdateObject(element),
+        {new: true,fields: "name matricula email grades course campus hasGrades isTutor"},
+        function(error, result) {
+        if (error) {
+          updating = false;
+          res.status(500).send("There was an error updating the document.");
+        }
+      });
+      i = i+1;
     }
-  });
+    if (updating) {
+      res.status(200).send("Updated multiple documents successfully!");
+    }
+  }
+  // just one
+  else {
+    TutorModel.findOneAndUpdate({'matricula': req.body.matricula}, 
+      router.createUpdateObject(req.body),
+      {new: true,fields: "name matricula email grades course campus hasGrades isTutor"},
+      function(error, result) {
+      if (error) {
+        res.status(500).send("There was an error updating the document.");
+      } else {
+        res.status(200).send(result);
+      }
+    });
+  }
 });
 
 // Add spaces
@@ -110,5 +130,45 @@ router.get("/plazas/list", function(req, res, next) {
     }
   });
 });
+
+// Create update object
+router.createUpdateObject = function(req) {
+  var obj = {};
+  if (req.name != null) {
+    obj.name = {};
+    obj.name.first = req.name.first;
+    obj.name.last = req.name.last;
+  }
+
+  if (req.matricula != null) {
+    obj.matricula = req.matricula;
+  }
+
+  if (req.email != null) {
+    obj.email = req.email;
+  }
+
+  if (req.campus != null) {
+    obj.campus = req.campus;
+  }
+
+  if (req.grades != null) {
+    obj.grades = req.grades;
+  }
+
+  if (req.course != null) {
+    obj.course = req.course;
+  }
+  
+  if (req.hasGrades != null) {
+    obj.hasGrades = req.hasGrades;
+  }
+
+  if (req.isTutor != null) {
+    obj.isTutor = req.isTutor;
+  }
+
+  return obj;
+};
 
 module.exports = router;
