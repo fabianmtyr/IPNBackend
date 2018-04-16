@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
+var http = require('http');
 
 // Student Schema
 var studentSchema = new mongoose.Schema({
@@ -22,6 +23,11 @@ router.get("/grades", function(req, res, next) {
   });
 });
 
+router.get("/list", function(req, res, next) {
+  router.createStudents();
+  res.status(201).send();
+});
+
 // Update averages
 router.post("/new", function(req, res, next) {
   var newTutor = new TutorModel ({
@@ -41,9 +47,40 @@ router.post("/new", function(req, res, next) {
   });
 });
 
-router.randomizeGrades = function() {
-  
-};
+router.createStudents = function() {
+  var opts = {
+    host: 'localhost',
+    port: '8080',
+    path: '/tutors/list',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+  var getreq = http.request(opts, function(res) {
+    res.setEncoding('utf8');
+    res.on('data', function (chunk) {
+        router.copyMats(chunk);
+    });
+  })
 
+  getreq.end();
+}
+
+router.copyMats = function(tutors) {
+  var jsonTutors = JSON.parse(tutors);
+  console.log(jsonTutors);
+  for (var i = 0; i < jsonTutors.length; i++) {
+    var student = new StudentModel({
+      matricula: jsonTutors[1].matricula,
+      grade: Math.random()*100
+    });
+    student.save(function(error) {
+      if (error) {
+        console.log(error);
+      }
+    });
+  }
+}
 
 module.exports = router;

@@ -10,10 +10,10 @@ var tutorSchema = new mongoose.Schema({
   },
   matricula: String, 
   email: String,
-  grades: Number,
-  course: Number,
   campus: String,
-  hasGrades: Boolean,
+  average: Number,
+  courseGrade: Number,
+  isElegible: Boolean,
   isTutor: Boolean
 });
 
@@ -45,10 +45,10 @@ router.post("/new", function(req, res, next) {
     name: {first: req.body.name.first, last: req.body.name.last},
     matricula: req.body.matricula,
     email: req.body.email,
-    grades: undefined,
-    course: undefined,
+    average: undefined,
+    courseGrade: undefined,
     campus: undefined,
-    hasGrades: false,
+    isElegible: false,
     isTutor: false
   });
 
@@ -71,7 +71,7 @@ router.post("/edit", function(req, res, next) {
       var element = req.body[i];
       TutorModel.findOneAndUpdate({'matricula': element.matricula}, 
         router.createUpdateObject(element),
-        {new: true,fields: "name matricula email grades course campus hasGrades isTutor"},
+        {new: true,fields: "name matricula email average courseGrade campus isElegible isTutor"},
         function(error, result) {
         if (error) {
           updating = false;
@@ -88,7 +88,7 @@ router.post("/edit", function(req, res, next) {
   else {
     TutorModel.findOneAndUpdate({'matricula': req.body.matricula}, 
       router.createUpdateObject(req.body),
-      {new: true,fields: "name matricula email grades course campus hasGrades isTutor"},
+      {new: true,fields: "name matricula email average courseGrade campus isElegible isTutor"},
       function(error, result) {
       if (error) {
         res.status(500).send("There was an error updating the document.");
@@ -152,16 +152,16 @@ router.createUpdateObject = function(req) {
     obj.campus = req.campus;
   }
 
-  if (req.grades != null) {
-    obj.grades = req.grades;
+  if (req.average != null) {
+    obj.average = req.average;
   }
 
-  if (req.course != null) {
-    obj.course = req.course;
+  if (req.courseGrade != null) {
+    obj.courseGrade = req.courseGrade;
   }
   
-  if (req.hasGrades != null) {
-    obj.hasGrades = req.hasGrades;
+  if (req.isElegible != null) {
+    obj.isElegible = req.isElegible;
   }
 
   if (req.isTutor != null) {
