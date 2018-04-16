@@ -114,6 +114,20 @@ router.post("/edit", function(req, res, next) {
   }
 });
 
+// Remove
+router.post("/remove", function(req, res, next) {
+  TutorModel.findOneAndRemove({'matricula' : req.body.matricula}, function(error, response) {
+    if (error) {
+      res.status(500).send("There was an error removing the element.");
+    }
+    else {
+      res.status(200).send("Successfully removed object.");
+    }
+  });
+});
+
+// ###### PLAZAS ######
+
 // Add spaces
 router.post("/plazas/edit", function(req, res, next) {
   var plaza = {
