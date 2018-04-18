@@ -181,8 +181,15 @@ router.createUpdateObject = function(req) {
     obj.campus = req.campus;
   }
 
+  // If average, also pre-add isElegible
   if (req.average != null) {
     obj.average = req.average;
+    if (parseInt(req.average, 10) >= 85) {
+      obj.isElegible = true;
+    }
+    else {
+      obj.isElegible = false;
+    }
   }
 
   if (req.courseGrade != null) {
