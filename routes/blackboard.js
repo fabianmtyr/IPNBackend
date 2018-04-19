@@ -13,6 +13,7 @@ var StudentModel = mongoose.model('Student', studentSchema);
 
 // Get all grades
 router.get("/grades", function(req, res, next) {
+  console.log("buscando grades...");
   StudentModel.find({}, function(error, result) {
     if (error) {
       res.status(500).send("There was an error finding the documents.");
@@ -23,6 +24,7 @@ router.get("/grades", function(req, res, next) {
   });
 });
 
+// Gets list of students and assigns a grade
 router.get("/list", function(req, res, next) {
   router.createStudents();
   res.status(201).send();
@@ -69,17 +71,19 @@ router.createStudents = function() {
 
 router.copyMats = function(tutors) {
   var jsonTutors = JSON.parse(tutors);
-  console.log(jsonTutors);
+  // console.log(jsonTutors);
   for (var i = 0; i < jsonTutors.length; i++) {
-    var student = new StudentModel({
-      matricula: jsonTutors[1].matricula,
-      grade: Math.random()*100
-    });
-    student.save(function(error) {
-      if (error) {
-        console.log(error);
-      }
-    });
+    if (jsonTutors[i].isElegible) {
+      var student = new StudentModel({
+        matricula: jsonTutors[i].matricula,
+        grade: Math.random()*41+60
+      });
+      student.save(function(error) {
+        if (error) {
+          console.log(error);
+        }
+      });
+    }
   }
 }
 

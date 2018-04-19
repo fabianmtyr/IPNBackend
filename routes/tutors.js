@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
+var http = require('http');
 
 // Tutor Schema
 var tutorSchema = new mongoose.Schema({
@@ -14,7 +15,8 @@ var tutorSchema = new mongoose.Schema({
   average: Number,
   courseGrade: Number,
   isElegible: Boolean,
-  isTutor: Boolean
+  isTutor: Boolean,
+  materias: Array
 });
 
 var TutorModel = mongoose.model('Tutors', tutorSchema);
@@ -32,6 +34,7 @@ var SpacesModel = mongoose.model('Spaces', spacesSchema);
 
 // Get a list of all available tutors
 router.get("/list", function(req, res, next) {
+  router.checkForCourseGrades();
   TutorModel.find({}, function(error, result) {
     if (error) {
       res.status(500).send("There was an error finding the documents.");
@@ -206,5 +209,62 @@ router.createUpdateObject = function(req) {
 
   return obj;
 };
+
+
+router.checkForCourseGrades = function() {
+  TutorModel.findOne({'isElegible': true}, function(error, result) {
+    if (result && !result.courseGrade) {
+      console.log("ya puedo checar califs");
+      // Get grades and update db
+      var options = {
+        host: 'localhost',
+        port: '8080',
+        path: '/blackboard/grades',
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      };
+
+      var getreq = http.request(options, function(res) {
+        res.setEncoding('utf8');
+        res.on('data', function (chunk) {
+          console.log("chunk length: " + chunk.length);
+          console.log("chunk:" + chunk);
+            if (chunk.length > 2) {
+              console.log("ya hay califs");
+              router.copyGrades(chunk);
+            }
+            else {
+              console.log("aun no hay califs");
+            }
+        });
+      })
+    
+      getreq.end();
+    }
+  })
+}
+
+router.copyGrades = function(tutors) {
+  var jsonTutors = JSON.parse(tutors);
+  console.log("tutor grades:" + jsonTutors);
+  for (var i = 0; i < jsonTutors.length; i++) {
+    var tutor = {
+      matricula: jsonTutors[i].matricula,
+      courseGrade: jsonTutors[i].grade,
+      isTutor: parseInt(jsonTutors[i].grade)>70 ? true : false
+    }
+
+    TutorModel.findOneAndUpdate({'matricula': jsonTutors[i].matricula}, 
+      tutor,
+      {new: true,fields: "name matricula email average courseGrade campus isElegible isTutor"},
+      function(error, result) {
+      if (error) {
+        console.log("There was an error updating the document.");
+      } 
+    });
+  }
+}
 
 module.exports = router;
