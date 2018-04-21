@@ -34,7 +34,7 @@ var SpacesModel = mongoose.model('Spaces', spacesSchema);
 
 // Get a list of all available tutors
 router.get("/list", function(req, res, next) {
-  router.checkForCourseGrades();
+  // router.checkForCourseGrades();
   TutorModel.find({}, function(error, result) {
     if (error) {
       res.status(500).send("There was an error finding the documents.");
