@@ -210,10 +210,10 @@ router.createUpdateObject = function(req) {
   return obj;
 };
 
-
 router.checkForCourseGrades = function() {
-  TutorModel.findOne({'isElegible': true}, function(error, result) {
-    if (result && !result.courseGrade) {
+  TutorModel.findOne({'isElegible': true, 'courseGrade': {$exists:false}}, function(error, result) {
+    console.log(result);
+    if (result) {
       console.log("ya puedo checar califs");
       // Get grades and update db
       var options = {
