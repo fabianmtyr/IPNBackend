@@ -5,17 +5,19 @@ var http = require('http');
 
 // Tutor Schema
 var tutorSchema = new mongoose.Schema({
-  name: {
-    first: String,
-    last: String
+  nombre: {
+    nombre: String,
+    apellido: String
   },
   matricula: String, 
-  email: String,
+  correo: String,
   campus: String,
-  average: Number,
-  courseGrade: Number,
-  isElegible: Boolean,
-  isTutor: Boolean,
+  carrera: String,
+  semstre: String, 
+  promedio: Number,
+  calificacionCurso: Number,
+  cumplePromedio: Boolean,
+  pasoCurso: Boolean,
   materias: Array
 });
 
@@ -47,14 +49,14 @@ router.get("/list", function(req, res, next) {
 // Creates a new tutor in the db
 router.post("/new", function(req, res, next) {
   var newTutor = new TutorModel ({
-    name: {first: req.body.name.first, last: req.body.name.last},
+    nombre: {nombre: req.body.nombre.nombre, apellido: req.body.nombre.apellido},
     matricula: req.body.matricula,
-    email: req.body.email,
-    average: undefined,
-    courseGrade: undefined,
+    correo: req.body.correo,
+    promedio: undefined,
+    calificacionCurso: undefined,
     campus: undefined,
-    isElegible: false,
-    isTutor: false
+    cumplePromedio: false,
+    pasoCurso: false
   });
 
   // Look for an existing tutor with the same matricula, if it already exists, don't save.
@@ -89,7 +91,7 @@ router.post("/edit", function(req, res, next) {
       var element = req.body[i];
       TutorModel.findOneAndUpdate({'matricula': element.matricula}, 
         router.createUpdateObject(element),
-        {new: true,fields: "name matricula email average courseGrade campus isElegible isTutor"},
+        {new: true,fields: "nombre matricula correo promedio calificacionCurso campus semestre carrera cumplePromedio pasoCurso"},
         function(error, result) {
         if (error) {
           updating = false;
@@ -106,7 +108,7 @@ router.post("/edit", function(req, res, next) {
   else {
     TutorModel.findOneAndUpdate({'matricula': req.body.matricula}, 
       router.createUpdateObject(req.body),
-      {new: true,fields: "name matricula email average courseGrade campus isElegible isTutor"},
+      {new: true,fields: "nombre matricula correo promedio calificacionCurso campus semestre carrera cumplePromedio pasoCurso"},
       function(error, result) {
       if (error) {
         res.status(500).send("There was an error updating the document.");
@@ -166,45 +168,53 @@ router.get("/plazas/list", function(req, res, next) {
 // Create update object
 router.createUpdateObject = function(req) {
   var obj = {};
-  if (req.name != null) {
-    obj.name = {};
-    obj.name.first = req.name.first;
-    obj.name.last = req.name.last;
+  if (req.nombre != null) {
+    obj.nombre = {};
+    obj.nombre.nombre = req.nombre.nombre;
+    obj.nombre.apellido = req.nombre.apellido;
   }
 
   if (req.matricula != null) {
     obj.matricula = req.matricula;
   }
 
-  if (req.email != null) {
-    obj.email = req.email;
+  if (req.correo != null) {
+    obj.correo = req.correo;
   }
 
   if (req.campus != null) {
     obj.campus = req.campus;
   }
 
+  if (req.semestre != null) {
+    obj.semestre = req.semestre;
+  }
+
+  if (req.carrera != null) {
+    obj.carrera = req.carrera;
+  }
+
   // If average, also pre-add isElegible
-  if (req.average != null) {
-    obj.average = req.average;
-    if (parseInt(req.average, 10) >= 85) {
-      obj.isElegible = true;
+  if (req.promedio != null) {
+    obj.promedio = req.promedio;
+    if (parseInt(req.promedio, 10) >= 85) {
+      obj.cumplePromedio = true;
     }
     else {
-      obj.isElegible = false;
+      obj.cumplePromedio = false;
     }
   }
 
-  if (req.courseGrade != null) {
-    obj.courseGrade = req.courseGrade;
+  if (req.calificacionCurso != null) {
+    obj.calificacionCurso = req.calificacionCurso;
   }
   
-  if (req.isElegible != null) {
-    obj.isElegible = req.isElegible;
+  if (req.cumplePromedio != null) {
+    obj.cumplePromedio = req.cumplePromedio;
   }
 
-  if (req.isTutor != null) {
-    obj.isTutor = req.isTutor;
+  if (req.pasoCurso != null) {
+    obj.pasoCurso = req.pasoCurso;
   }
 
   return obj;
