@@ -36,14 +36,59 @@ var SpacesModel = mongoose.model('Spaces', spacesSchema);
 
 // Get a list of all available tutors
 router.get("/list", function(req, res, next) {
-  router.checkForCourseGrades();
   TutorModel.find({}, function(error, result) {
     if (error) {
       res.status(500).send("There was an error finding the documents.");
-    } else {
+    } 
+    else {
+      result.forEach(function(tutor) {
+        if (tutor.cumplePromedio == true && !calificacionCurso) {
+          tutor.grade = Math.random()*31+70;
+          if (tutor.grade >= 80) {
+            tutor.pasoCurso = true;
+          }
+          tutor.save(function(err) {
+            if (err) {
+              res.status(500).send("There was an error updating the documents.");
+            }
+          });
+        }
+      });
       res.status(200).send(result);
     }
   });
+
+
+  TutorModel.find({'cumplePromedio': true, 'calificacionCurso': {$exists:false}}, function(error, result) {
+    console.log(result);
+    if (result.length > 0) {
+      for (var i = 0; i < result.length; i++) {
+        var grade = Math.random()*31+70;
+        result[i].calificacionCurso = grade;
+        if (grade >= 80) {
+          result[i].pasoCurso = true;
+        }
+        console.log(result[i]);
+        result[i].save(function(err){
+          if (err) {
+            console.log(err);
+          }
+        });
+      }
+
+    } 
+    else {
+      TutorModel.find({}, function(error, result) {
+        if (error) {
+          res.status(500).send("There was an error finding the documents.");
+        } else {
+          res.status(200).send(result);
+        }
+      });
+    }
+  });
+
+  
 });
 
 // Creates a new tutor in the db
@@ -249,32 +294,6 @@ router.checkForCourseGrades = function() {
           }
         });
       }
-      // Get grades and update db
-      // var options = {
-      //   host: 'https://ipn-backend.herokuapp.com',
-      //   port: process.env.PORT,
-      //   path: '/blackboard/grades',
-      //   method: 'GET',
-      //   headers: {
-      //     'Content-Type': 'application/json'
-      //   }
-      // };
-
-      // var getreq = http.request(options, function(res) {
-      //   res.setEncoding('utf8');
-      //   res.on('data', function (chunk) {
-      //     console.log("chunk length: " + chunk.length);
-      //     console.log("chunk:" + chunk);
-      //       if (chunk.length > 2) {
-      //         console.log("ya hay califs");
-      //         router.copyGrades(chunk);
-      //       }
-      //       else {
-      //         console.log("aun no hay califs");
-      //       }
-      //   });
-      // });
-      // getreq.end();
 
     }
   });
