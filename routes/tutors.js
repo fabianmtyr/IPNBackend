@@ -13,7 +13,7 @@ var tutorSchema = new mongoose.Schema({
   correo: String,
   campus: String,
   carrera: String,
-  semstre: String, 
+  semestre: String, 
   promedio: Number,
   calificacionCurso: Number,
   cumplePromedio: Boolean,
@@ -37,16 +37,6 @@ var SpacesModel = mongoose.model('Spaces', spacesSchema);
 // Get a list of all available tutors
 router.get("/list", function(req, res, next) {
   router.checkForCourseGrades();
-  TutorModel.find({}, function(error, result) {
-    if (error) {
-      res.status(500).send("There was an error finding the documents.");
-    } else {
-      res.status(200).send(result);
-    }
-  });
-});
-
-router.get("/bblist", function(req, res, next) {
   TutorModel.find({}, function(error, result) {
     if (error) {
       res.status(500).send("There was an error finding the documents.");
@@ -200,12 +190,10 @@ router.createUpdateObject = function(req) {
   }
 
   if (req.semestre != null) {
-    console.log("tiene semestre");
     obj.semestre = req.semestre;
   }
 
   if (req.carrera != null) {
-    console.log("tiene carrera");
     obj.carrera = req.carrera;
   }
 
@@ -236,59 +224,77 @@ router.createUpdateObject = function(req) {
 };
 
 router.checkForCourseGrades = function() {
-  TutorModel.findOne({'cumplePromedio': true, 'calificacionCurso': {$exists:false}}, function(error, result) {
+  TutorModel.find({'cumplePromedio': true, 'calificacionCurso': {$exists:false}}, function(error, result) {
     console.log(result);
-    if (result) {
+    if (result.length > 0) {
       console.log("ya puedo checar califs");
-      // Get grades and update db
-      var options = {
-        host: 'https://ipn-backend.herokuapp.com',
-        port: process.env.PORT,
-        path: '/blackboard/grades',
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
+
+      for (var i = 0; i < result.length; i++) {
+        var grade = Math.random()*31+70;
+        result[i].calificacionCurso = grade;
+        if (grade >= 80) {
+          result[i].pasoCurso = true;
         }
-      };
-
-      var getreq = http.request(options, function(res) {
-        res.setEncoding('utf8');
-        res.on('data', function (chunk) {
-          console.log("chunk length: " + chunk.length);
-          console.log("chunk:" + chunk);
-            if (chunk.length > 2) {
-              console.log("ya hay califs");
-              router.copyGrades(chunk);
-            }
-            else {
-              console.log("aun no hay califs");
-            }
+        console.log(result[i]);
+        result[i].save(function(err){
+          if (err) {
+            console.log(err);
+          }
+          else {
+            console.log("si se grabo");
+          }
         });
-      });
-      getreq.end();
+      }
+      // Get grades and update db
+      // var options = {
+      //   host: 'https://ipn-backend.herokuapp.com',
+      //   port: process.env.PORT,
+      //   path: '/blackboard/grades',
+      //   method: 'GET',
+      //   headers: {
+      //     'Content-Type': 'application/json'
+      //   }
+      // };
+
+      // var getreq = http.request(options, function(res) {
+      //   res.setEncoding('utf8');
+      //   res.on('data', function (chunk) {
+      //     console.log("chunk length: " + chunk.length);
+      //     console.log("chunk:" + chunk);
+      //       if (chunk.length > 2) {
+      //         console.log("ya hay califs");
+      //         router.copyGrades(chunk);
+      //       }
+      //       else {
+      //         console.log("aun no hay califs");
+      //       }
+      //   });
+      // });
+      // getreq.end();
+
     }
-  })
+  });
 }
 
-router.copyGrades = function(tutors) {
-  var jsonTutors = JSON.parse(tutors);
-  console.log("tutor grades:" + jsonTutors);
-  for (var i = 0; i < jsonTutors.length; i++) {
-    var tutor = {
-      matricula: jsonTutors[i].matricula,
-      calificacionCurso: jsonTutors[i].grade,
-      pasoCurso: parseInt(jsonTutors[i].grade)>70 ? true : false
-    }
+// router.copyGrades = function(tutors) {
+//   var jsonTutors = JSON.parse(tutors);
+//   console.log("tutor grades:" + jsonTutors);
+//   for (var i = 0; i < jsonTutors.length; i++) {
+//     var tutor = {
+//       matricula: jsonTutors[i].matricula,
+//       calificacionCurso: jsonTutors[i].grade,
+//       pasoCurso: parseInt(jsonTutors[i].grade)>70 ? true : false
+//     }
 
-    TutorModel.findOneAndUpdate({'matricula': jsonTutors[i].matricula}, 
-      tutor,
-      {new: true,fields: "nombre matricula correo promedio calificacionCurso campus semestre carrera cumplePromedio pasoCurso"},
-      function(error, result) {
-      if (error) {
-        console.log("Hubo un error al editar los documentos.");
-      } 
-    });
-  }
-}
+//     TutorModel.findOneAndUpdate({'matricula': jsonTutors[i].matricula}, 
+//       tutor,
+//       {new: true,fields: "nombre matricula correo promedio calificacionCurso campus semestre carrera cumplePromedio pasoCurso"},
+//       function(error, result) {
+//       if (error) {
+//         console.log("Hubo un error al editar los documentos.");
+//       } 
+//     });
+//   }
+// }
 
 module.exports = router;
