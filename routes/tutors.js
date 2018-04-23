@@ -65,6 +65,8 @@ router.post("/new", function(req, res, next) {
     promedio: undefined,
     calificacionCurso: undefined,
     campus: undefined,
+    semestre: undefined,
+    carrera: undefined,
     cumplePromedio: false,
     pasoCurso: false
   });
