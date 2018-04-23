@@ -31,28 +31,28 @@ router.get("/list", function(req, res, next) {
 });
 
 // Update averages
-router.post("/new", function(req, res, next) {
-  var newTutor = new TutorModel ({
-    name: {first: req.body.name.first, last: req.body.name.last},
-    matricula: req.body.matricula,
-    email: req.body.email,
-    grades: undefined,
-    course: undefined
-  });
+// router.post("/new", function(req, res, next) {
+//   var newTutor = new TutorModel ({
+//     name: {first: req.body.name.first, last: req.body.name.last},
+//     matricula: req.body.matricula,
+//     email: req.body.email,
+//     grades: undefined,
+//     course: undefined
+//   });
 
-  newTutor.save(function (error) {
-    if (error) {
-      res.status(500).send("There was an error saving the document.");
-    } else {
-      res.status(201).send(newTutor);
-    }
-  });
-});
+//   newTutor.save(function (error) {
+//     if (error) {
+//       res.status(500).send("There was an error saving the document.");
+//     } else {
+//       res.status(201).send(newTutor);
+//     }
+//   });
+// });
 
 router.createStudents = function() {
   var opts = {
-    host: 'localhost',
-    port: '8080',
+    host: 'https://ipn-backend.herokuapp.com',
+    // port: '8080',
     path: '/tutors/list',
     method: 'GET',
     headers: {

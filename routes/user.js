@@ -41,7 +41,7 @@ router.post("/register", function(req, res, next) {
 
   newUser.save(function (error) {
     if (error) {
-      res.status(500).send("There was an error saving the new user.");
+      res.status(500).send("Error en la base de datos.");
     } else {
       res.status(201).send(newUser);
     }
@@ -58,7 +58,7 @@ router.post("/login", function(req, res, next) {
   };
   UserModel.findOne({'email': req.body.email}, function(err, user) {
     if (err) {
-      res.status(500).send("Error on find");
+      res.status(500).send("Error en la base de datos.");
     } else {
       if (user) {
         userobj.email = true;

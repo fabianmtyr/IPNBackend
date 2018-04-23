@@ -221,14 +221,14 @@ router.createUpdateObject = function(req) {
 };
 
 router.checkForCourseGrades = function() {
-  TutorModel.findOne({'isElegible': true, 'courseGrade': {$exists:false}}, function(error, result) {
+  TutorModel.findOne({'cumplePromedio': true, 'calificacionCurso': {$exists:false}}, function(error, result) {
     console.log(result);
     if (result) {
       console.log("ya puedo checar califs");
       // Get grades and update db
       var options = {
-        host: 'localhost',
-        port: '8080',
+        host: 'https://ipn-backend.herokuapp.com',
+        // port: '8080',
         path: '/blackboard/grades',
         method: 'GET',
         headers: {
@@ -249,8 +249,7 @@ router.checkForCourseGrades = function() {
               console.log("aun no hay califs");
             }
         });
-      })
-    
+      });
       getreq.end();
     }
   })
@@ -262,16 +261,16 @@ router.copyGrades = function(tutors) {
   for (var i = 0; i < jsonTutors.length; i++) {
     var tutor = {
       matricula: jsonTutors[i].matricula,
-      courseGrade: jsonTutors[i].grade,
-      isTutor: parseInt(jsonTutors[i].grade)>70 ? true : false
+      calificacionCurso: jsonTutors[i].grade,
+      pasoCurso: parseInt(jsonTutors[i].grade)>70 ? true : false
     }
 
     TutorModel.findOneAndUpdate({'matricula': jsonTutors[i].matricula}, 
       tutor,
-      {new: true,fields: "name matricula email average courseGrade campus isElegible isTutor"},
+      {new: true,fields: "nombre matricula correo promedio calificacionCurso campus semestre carrera cumplePromedio pasoCurso"},
       function(error, result) {
       if (error) {
-        console.log("There was an error updating the document.");
+        console.log("Hubo un error al editar los documentos.");
       } 
     });
   }
