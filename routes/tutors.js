@@ -230,10 +230,14 @@ router.checkForCourseGrades = function() {
       console.log("ya puedo checar califs");
 
       for (var i = 0; i < result.length; i++) {
+        console.log("adentro for");
         var grade = Math.random()*31+70;
+        console.log("calculo grade: " + grade);
         result[i].calificacionCurso = grade;
+        console.log("le agrego grade" + result[i]);
         if (grade >= 80) {
           result[i].pasoCurso = true;
+          console.log("le agrego paso curso" + result[i]);
         }
         console.log(result[i]);
         result[i].save(function(err){
