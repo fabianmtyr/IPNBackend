@@ -59,34 +59,34 @@ router.get("/list", function(req, res, next) {
   });
 
 
-  TutorModel.find({'cumplePromedio': true, 'calificacionCurso': {$exists:false}}, function(error, result) {
-    console.log(result);
-    if (result.length > 0) {
-      for (var i = 0; i < result.length; i++) {
-        var grade = Math.random()*31+70;
-        result[i].calificacionCurso = grade;
-        if (grade >= 80) {
-          result[i].pasoCurso = true;
-        }
-        console.log(result[i]);
-        result[i].save(function(err){
-          if (err) {
-            console.log(err);
-          }
-        });
-      }
+  // TutorModel.find({'cumplePromedio': true, 'calificacionCurso': {$exists:false}}, function(error, result) {
+  //   console.log(result);
+  //   if (result.length > 0) {
+  //     for (var i = 0; i < result.length; i++) {
+  //       var grade = Math.random()*31+70;
+  //       result[i].calificacionCurso = grade;
+  //       if (grade >= 80) {
+  //         result[i].pasoCurso = true;
+  //       }
+  //       console.log(result[i]);
+  //       result[i].save(function(err){
+  //         if (err) {
+  //           console.log(err);
+  //         }
+  //       });
+  //     }
 
-    } 
-    else {
-      TutorModel.find({}, function(error, result) {
-        if (error) {
-          res.status(500).send("There was an error finding the documents.");
-        } else {
-          res.status(200).send(result);
-        }
-      });
-    }
-  });
+  //   } 
+  //   else {
+  //     TutorModel.find({}, function(error, result) {
+  //       if (error) {
+  //         res.status(500).send("There was an error finding the documents.");
+  //       } else {
+  //         res.status(200).send(result);
+  //       }
+  //     });
+  //   }
+  // });
 
   
 });
