@@ -41,22 +41,30 @@ router.get("/list", function(req, res, next) {
       res.status(500).send("There was an error finding the documents.");
     } 
     else {
-      result.forEach(function(tutor) {
-        if (tutor.cumplePromedio == true && !calificacionCurso) {
-          tutor.grade = Math.random()*31+70;
-          if (tutor.grade >= 80) {
-            tutor.pasoCurso = true;
-          }
-          tutor.save(function(err) {
-            if (err) {
-              res.status(500).send("There was an error updating the documents.");
-            }
-          });
-        }
-      });
       res.status(200).send(result);
     }
   });
+  // TutorModel.find({}, function(error, result) {
+  //   if (error) {
+  //     res.status(500).send("There was an error finding the documents.");
+  //   } 
+  //   else {
+  //     result.forEach(function(tutor) {
+  //       if (tutor.cumplePromedio == true && !calificacionCurso) {
+  //         tutor.grade = Math.random()*31+70;
+  //         if (tutor.grade >= 80) {
+  //           tutor.pasoCurso = true;
+  //         }
+  //         tutor.save(function(err) {
+  //           if (err) {
+  //             res.status(500).send("There was an error updating the documents.");
+  //           }
+  //         });
+  //       }
+  //     });
+  //     res.status(200).send(result);
+  //   }
+  // });
 
 
   // TutorModel.find({'cumplePromedio': true, 'calificacionCurso': {$exists:false}}, function(error, result) {
@@ -299,25 +307,27 @@ router.checkForCourseGrades = function() {
   });
 }
 
-// router.copyGrades = function(tutors) {
-//   var jsonTutors = JSON.parse(tutors);
-//   console.log("tutor grades:" + jsonTutors);
-//   for (var i = 0; i < jsonTutors.length; i++) {
-//     var tutor = {
-//       matricula: jsonTutors[i].matricula,
-//       calificacionCurso: jsonTutors[i].grade,
-//       pasoCurso: parseInt(jsonTutors[i].grade)>70 ? true : false
-//     }
-
-//     TutorModel.findOneAndUpdate({'matricula': jsonTutors[i].matricula}, 
-//       tutor,
-//       {new: true,fields: "nombre matricula correo promedio calificacionCurso campus semestre carrera cumplePromedio pasoCurso"},
-//       function(error, result) {
-//       if (error) {
-//         console.log("Hubo un error al editar los documentos.");
-//       } 
-//     });
-//   }
-// }
+router.get("/updateBb", function(req, res, next) {
+  TutorModel.find({'cumplePromedio': true, 'calificacionCurso': {$exists:false}}, function(error, result) {
+    if (result.length > 0) {
+      for (var i = 0; i < result.length; i++) {
+        var grade = Math.random()*31+70;
+        result[i].calificacionCurso = grade;
+        if (grade >= 80) {
+          result[i].pasoCurso = true;
+        }
+        result[i].save(function(err){
+          if (err) {
+            res.status(500).send(err);
+          }
+        });
+      }
+      res.status(200).send(result);
+    } 
+    else {
+      res.status(200).send("Nada para actualizar.")
+    }
+  });
+});
 
 module.exports = router;
