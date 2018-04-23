@@ -46,6 +46,16 @@ router.get("/list", function(req, res, next) {
   });
 });
 
+router.get("/bblist", function(req, res, next) {
+  TutorModel.find({}, function(error, result) {
+    if (error) {
+      res.status(500).send("There was an error finding the documents.");
+    } else {
+      res.status(200).send(result);
+    }
+  });
+});
+
 // Creates a new tutor in the db
 router.post("/new", function(req, res, next) {
   var newTutor = new TutorModel ({

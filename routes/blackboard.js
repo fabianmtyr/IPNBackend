@@ -53,7 +53,7 @@ router.createStudents = function() {
   var opts = {
     host: 'https://ipn-backend.herokuapp.com',
     // port: '8080',
-    path: '/tutors/list',
+    path: '/tutors/bblist',
     method: 'GET',
     headers: {
       'Content-Type': 'application/json'
