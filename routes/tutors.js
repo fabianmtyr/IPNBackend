@@ -216,7 +216,7 @@ router.createUpdateObject = function(req) {
   if (req.pasoCurso != null) {
     obj.pasoCurso = req.pasoCurso;
   }
-
+  console.log("update obj: " + obj);
   return obj;
 };
 

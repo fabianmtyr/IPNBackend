@@ -18,7 +18,7 @@ router.get("/grades", function(req, res, next) {
     if (error) {
       res.status(500).send("There was an error finding the documents.");
     } else {
-      // console.log(result);
+      console.log(result);
       res.status(200).send(result);
     }
   });
@@ -71,7 +71,7 @@ router.createStudents = function() {
 
 router.copyMats = function(tutors) {
   var jsonTutors = JSON.parse(tutors);
-  // console.log(jsonTutors);
+  console.log("tutors list: " + jsonTutors);
   for (var i = 0; i < jsonTutors.length; i++) {
     if (jsonTutors[i].isElegible) {
       var student = new StudentModel({
