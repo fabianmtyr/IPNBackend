@@ -180,6 +180,7 @@ router.get("/plazas/list", function(req, res, next) {
 // Create update object
 router.createUpdateObject = function(req) {
   var obj = {};
+  console.log("req body : " + req.body);
   if (req.nombre != null) {
     obj.nombre = {};
     obj.nombre.nombre = req.nombre.nombre;
@@ -199,10 +200,12 @@ router.createUpdateObject = function(req) {
   }
 
   if (req.semestre != null) {
+    console.log("tiene semestre");
     obj.semestre = req.semestre;
   }
 
   if (req.carrera != null) {
+    console.log("tiene carrera");
     obj.carrera = req.carrera;
   }
 
@@ -240,7 +243,7 @@ router.checkForCourseGrades = function() {
       // Get grades and update db
       var options = {
         host: 'https://ipn-backend.herokuapp.com',
-        // port: '8080',
+        port: process.env.PORT,
         path: '/blackboard/grades',
         method: 'GET',
         headers: {
