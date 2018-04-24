@@ -8,7 +8,8 @@ var SALT_WORK_FACTOR = 10;
 var userSchema = new mongoose.Schema({
   email: String,
   password: String,
-  name: String
+  name: String,
+  campus: String
 });
 
 var UserModel = mongoose.model('User', userSchema);
@@ -34,12 +35,13 @@ router.post("/register", function(req, res, next) {
   var newUser = new UserModel ({
     email: req.body.email,
     password: req.body.password,
-    name: req.body.name
+    name: req.body.name,
+    campus: req.body.campus
   });
 
   newUser.save(function (error) {
     if (error) {
-      res.status(500).send("There was an error saving the new user.");
+      res.status(500).send("Error en la base de datos.");
     } else {
       res.status(201).send(newUser);
     }
@@ -48,17 +50,27 @@ router.post("/register", function(req, res, next) {
 
 // Log in
 router.post("/login", function(req, res, next) {
+  var userobj = {
+    email: false,
+    password: false,
+    name: "",
+    campus: ""
+  };
   UserModel.findOne({'email': req.body.email}, function(err, user) {
     if (err) {
-      res.status(500).send("Error on find");
+      res.status(500).send("Error en la base de datos.");
     } else {
       if (user) {
+        userobj.email = true;
+        userobj.name = user.name;
+        userobj.campus = user.campus;
         bcrypt.compare(req.body.password, user.password, function(error, result) {
-          res.status(200).send(result);
+          userobj.password = result;
+          res.status(200).send(userobj);
         });
       }
       else {
-        res.status(200).send("Username not found.");
+        res.status(200).send(userobj);
       }
     }
   });

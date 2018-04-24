@@ -4,6 +4,7 @@ var mongoose = require("mongoose");
 
 var user = require("./routes/user.js");
 var tutors = require("./routes/tutors.js");
+var blackboard = require("./routes/blackboard.js");
 var cors = require("cors");
 
 var app = express();
@@ -42,6 +43,7 @@ function handleError(res, reason, message, code) {
 // app.use('/', index);
 app.use('/tutors', tutors);
 app.use('/user', user);
+app.use('/blackboard', blackboard);
 
 // app.use(function(req, res, next) {
 //   res.header("Access-Control-Allow-Origin", "https://localhost:4200");
