@@ -265,7 +265,10 @@ router.post("/sendMail", function(req, res, next) {
     })
     .then(function(correos){
       console.log(correos);
-      router.sendMail(correos);
+      return router.sendMail(correos);
+    })
+    .then(function(messageId){
+      res.status(200).send({"message":"Correos enviados."});
     })
     
     .then(null, next);
@@ -283,9 +286,11 @@ router.post("/sendMail", function(req, res, next) {
     })
     .then(function(correos){
       console.log(correos);
-      router.sendMail(correos);
+      return router.sendMail(correos);
     })
-    
+    .then(function(messageId){
+      res.status(200).send({"message":messageId});
+    })
     .then(null, next);
   }
 });
@@ -322,7 +327,7 @@ router.sendMail = function(mailList) {
           console.log('Message sent: %s', info.messageId);
           // Preview only available when sending through an Ethereal account
           console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-  
+          return nodemailer.getTestMessageUrl(info);
           // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
           // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
       });
