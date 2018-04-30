@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
-var http = require('http');
+var nodemailer = require('nodemailer');
 
 // Tutor Schema
 var tutorSchema = new mongoose.Schema({
@@ -17,20 +17,21 @@ var tutorSchema = new mongoose.Schema({
   promedio: Number,
   calificacionCurso: Number,
   cumplePromedio: Boolean,
-  pasoCurso: Boolean,
-  materias: Array
+  esTutor: Boolean,
+  materias: Array,
+  periodo: String
 });
 
 var TutorModel = mongoose.model('Tutors', tutorSchema);
 
-// Spaces (Plazas de tutores) schema
-var spacesSchema = new mongoose.Schema({
-  campus: String,
-  tutors: Number,
-  staff: Number
-});
+// // Spaces (Plazas de tutores) schema
+// var spacesSchema = new mongoose.Schema({
+//   campus: String,
+//   tutors: Number,
+//   staff: Number
+// });
 
-var SpacesModel = mongoose.model('Spaces', spacesSchema);
+// var SpacesModel = mongoose.model('Spaces', spacesSchema);
 
 // ####### TUTOR ROUTES #######
 
@@ -44,59 +45,6 @@ router.get("/list", function(req, res, next) {
       res.status(200).send(result);
     }
   });
-  // TutorModel.find({}, function(error, result) {
-  //   if (error) {
-  //     res.status(500).send("There was an error finding the documents.");
-  //   } 
-  //   else {
-  //     result.forEach(function(tutor) {
-  //       if (tutor.cumplePromedio == true && !calificacionCurso) {
-  //         tutor.grade = Math.random()*31+70;
-  //         if (tutor.grade >= 80) {
-  //           tutor.pasoCurso = true;
-  //         }
-  //         tutor.save(function(err) {
-  //           if (err) {
-  //             res.status(500).send("There was an error updating the documents.");
-  //           }
-  //         });
-  //       }
-  //     });
-  //     res.status(200).send(result);
-  //   }
-  // });
-
-
-  // TutorModel.find({'cumplePromedio': true, 'calificacionCurso': {$exists:false}}, function(error, result) {
-  //   console.log(result);
-  //   if (result.length > 0) {
-  //     for (var i = 0; i < result.length; i++) {
-  //       var grade = Math.random()*31+70;
-  //       result[i].calificacionCurso = grade;
-  //       if (grade >= 80) {
-  //         result[i].pasoCurso = true;
-  //       }
-  //       console.log(result[i]);
-  //       result[i].save(function(err){
-  //         if (err) {
-  //           console.log(err);
-  //         }
-  //       });
-  //     }
-
-  //   } 
-  //   else {
-  //     TutorModel.find({}, function(error, result) {
-  //       if (error) {
-  //         res.status(500).send("There was an error finding the documents.");
-  //       } else {
-  //         res.status(200).send(result);
-  //       }
-  //     });
-  //   }
-  // });
-
-  
 });
 
 // Creates a new tutor in the db
@@ -107,11 +55,13 @@ router.post("/new", function(req, res, next) {
     correo: req.body.correo,
     promedio: undefined,
     calificacionCurso: undefined,
-    campus: undefined,
+    campus: req.body.campus,
     semestre: undefined,
     carrera: undefined,
     cumplePromedio: false,
-    pasoCurso: false
+    esTutor: false,
+    materias: req.body.materias,
+    periodo: undefined
   });
 
   // Look for an existing tutor with the same matricula, if it already exists, don't save.
@@ -146,7 +96,7 @@ router.post("/edit", function(req, res, next) {
       var element = req.body[i];
       TutorModel.findOneAndUpdate({'matricula': element.matricula}, 
         router.createUpdateObject(element),
-        {new: true,fields: "nombre matricula correo promedio calificacionCurso campus semestre carrera cumplePromedio pasoCurso"},
+        {new: true,fields: "nombre matricula correo promedio calificacionCurso campus semestre carrera cumplePromedio esTutor materias periodo"},
         function(error, result) {
         if (error) {
           updating = false;
@@ -163,7 +113,7 @@ router.post("/edit", function(req, res, next) {
   else {
     TutorModel.findOneAndUpdate({'matricula': req.body.matricula}, 
       router.createUpdateObject(req.body),
-      {new: true,fields: "nombre matricula correo promedio calificacionCurso campus semestre carrera cumplePromedio pasoCurso"},
+      {new: true},
       function(error, result) {
       if (error) {
         res.status(500).send("There was an error updating the document.");
@@ -188,37 +138,37 @@ router.post("/remove", function(req, res, next) {
 
 // ###### PLAZAS ######
 
-// Add spaces
-router.post("/plazas/edit", function(req, res, next) {
-  var plaza = {
-    campus: req.body.campus,
-    tutors: req.body.tutors,
-    staff: req.body.staff
-  };
+// // Add spaces
+// router.post("/plazas/edit", function(req, res, next) {
+//   var plaza = {
+//     campus: req.body.campus,
+//     tutors: req.body.tutors,
+//     staff: req.body.staff
+//   };
 
-  SpacesModel.findOneAndUpdate({'campus': req.body.campus}, 
-    plaza,
-    {new:true, fields: "campus tutors staff", upsert:true},
-    function(error, result) {
-      if (error) {
-        res.status(500).send("There was an error updating the document.");
-      } else {
-        res.status(200).send(result);
-      }
-    });
-});
+//   SpacesModel.findOneAndUpdate({'campus': req.body.campus}, 
+//     plaza,
+//     {new:true, fields: "campus tutors staff", upsert:true},
+//     function(error, result) {
+//       if (error) {
+//         res.status(500).send("There was an error updating the document.");
+//       } else {
+//         res.status(200).send(result);
+//       }
+//     });
+// });
 
-// Lookup spaces
-router.get("/plazas/list", function(req, res, next) {
-  SpacesModel.find({}, function(error, result) {
-    if (error) {
-      res.status(500).send("There was an error finding the documents.");
-    } else {
-      // console.log(result);
-      res.status(200).send(result);
-    }
-  });
-});
+// // Lookup spaces
+// router.get("/plazas/list", function(req, res, next) {
+//   SpacesModel.find({}, function(error, result) {
+//     if (error) {
+//       res.status(500).send("There was an error finding the documents.");
+//     } else {
+//       // console.log(result);
+//       res.status(200).send(result);
+//     }
+//   });
+// });
 
 // Create update object
 router.createUpdateObject = function(req) {
@@ -269,43 +219,20 @@ router.createUpdateObject = function(req) {
     obj.cumplePromedio = req.cumplePromedio;
   }
 
-  if (req.pasoCurso != null) {
-    obj.pasoCurso = req.pasoCurso;
+  if (req.esTutor != null) {
+    obj.esTutor = req.esTutor;
+  }
+
+  if (req.materias != null) {
+    obj.materias = req.materias;
+  }
+
+  if (req.periodo != null) {
+    obj.periodo = req.periodo;
   }
   console.log("update obj: " + obj);
   return obj;
 };
-
-router.checkForCourseGrades = function() {
-  TutorModel.find({'cumplePromedio': true, 'calificacionCurso': {$exists:false}}, function(error, result) {
-    console.log(result);
-    if (result.length > 0) {
-      console.log("ya puedo checar califs");
-
-      for (var i = 0; i < result.length; i++) {
-        console.log("adentro for");
-        var grade = Math.random()*31+70;
-        console.log("calculo grade: " + grade);
-        result[i].calificacionCurso = grade;
-        console.log("le agrego grade" + result[i]);
-        if (grade >= 80) {
-          result[i].pasoCurso = true;
-          console.log("le agrego paso curso" + result[i]);
-        }
-        console.log(result[i]);
-        result[i].save(function(err){
-          if (err) {
-            console.log(err);
-          }
-          else {
-            console.log("si se grabo");
-          }
-        });
-      }
-
-    }
-  });
-}
 
 router.get("/updateBb", function(req, res, next) {
   TutorModel.find({'cumplePromedio': true, 'calificacionCurso': {$exists:false}}, function(error, result) {
@@ -314,7 +241,7 @@ router.get("/updateBb", function(req, res, next) {
         var grade = Math.random()*31+70;
         result[i].calificacionCurso = grade;
         if (grade >= 80) {
-          result[i].pasoCurso = true;
+          result[i].esTutor = true;
         }
         result[i].save(function(err){
           if (err) {
@@ -329,5 +256,91 @@ router.get("/updateBb", function(req, res, next) {
     }
   });
 });
+
+router.post("/sendMail", function(req, res, next) {
+  if (req.body.type == "curso") {
+    // send correo para curso
+    // get lista de correos
+    TutorModel.find({'cumplePromedio' : true, 'campus' : { $in : req.body.campus} }).exec()
+
+    .then(function(tutors) {
+      var listaCorreos = [];
+      tutors.forEach(function(tutor) {
+        listaCorreos.push(tutor.correo);
+      });
+      return listaCorreos;
+    })
+    .then(function(correos){
+      console.log(correos);
+      return router.sendMail(correos);
+    })
+    .then(function(messageId){
+      console.log("ya se mando");
+      res.status(200).send({"message":messageId});
+    })
+    
+    .then(null, next);
+  }
+  else if (req.body.type == "inscripcion") {
+    // send correo para inscripcion
+    TutorModel.find({'esTutor' : true, 'campus' : { $in : req.body.campus} }).exec()
+
+    .then(function(tutors) {
+      var listaCorreos = [];
+      tutors.forEach(function(tutor) {
+        listaCorreos.push(tutor.correo);
+      });
+      return listaCorreos;
+    })
+    .then(function(correos){
+      console.log(correos);
+      return router.sendMail(correos);
+    })
+    .then(function(messageId){
+      res.status(200).send({"message":messageId});
+    })
+    .then(null, next);
+  }
+});
+
+router.sendMail = function(mailList) {
+  if (mailList.length > 0) {
+    
+    nodemailer.createTestAccount((err, account) => {
+      // create reusable transporter object using the default SMTP transport
+      let transporter = nodemailer.createTransport({
+          host: 'smtp.ethereal.email',
+          port: 587,
+          secure: false, // true for 465, false for other ports
+          auth: {
+              user: account.user, // generated ethereal user
+              pass: account.pass // generated ethereal password
+          }
+      });
+  
+      // setup email data with unicode symbols
+      let mailOptions = {
+          from: '"PrepaNet" <prepanet@itesm.mx>', // sender address
+          to: mailList.toString(), // list of receivers
+          subject: 'Hello', // Subject line
+          text: 'Hello world?', // plain text body
+          html: '<b>Hello world?</b>' // html body
+      };
+  
+      // send mail with defined transport object
+      transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+              return console.log(error);
+          }
+          console.log('Message sent: %s', info.messageId);
+          // Preview only available when sending through an Ethereal account
+          console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+          return nodemailer.getTestMessageUrl(info);
+          // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+          // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+      });
+    });
+  }
+}
 
 module.exports = router;
