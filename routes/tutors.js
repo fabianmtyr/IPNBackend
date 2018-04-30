@@ -18,7 +18,8 @@ var tutorSchema = new mongoose.Schema({
   calificacionCurso: Number,
   cumplePromedio: Boolean,
   esTutor: Boolean,
-  materias: Array
+  materias: Array,
+  periodo: String
 });
 
 var TutorModel = mongoose.model('Tutors', tutorSchema);
@@ -54,11 +55,13 @@ router.post("/new", function(req, res, next) {
     correo: req.body.correo,
     promedio: undefined,
     calificacionCurso: undefined,
-    campus: undefined,
+    campus: req.body.campus,
     semestre: undefined,
     carrera: undefined,
     cumplePromedio: false,
-    esTutor: false
+    esTutor: false,
+    materias: req.body.materias,
+    periodo: undefined
   });
 
   // Look for an existing tutor with the same matricula, if it already exists, don't save.
@@ -93,7 +96,7 @@ router.post("/edit", function(req, res, next) {
       var element = req.body[i];
       TutorModel.findOneAndUpdate({'matricula': element.matricula}, 
         router.createUpdateObject(element),
-        {new: true,fields: "nombre matricula correo promedio calificacionCurso campus semestre carrera cumplePromedio esTutor materias"},
+        {new: true,fields: "nombre matricula correo promedio calificacionCurso campus semestre carrera cumplePromedio esTutor materias periodo"},
         function(error, result) {
         if (error) {
           updating = false;
@@ -110,7 +113,7 @@ router.post("/edit", function(req, res, next) {
   else {
     TutorModel.findOneAndUpdate({'matricula': req.body.matricula}, 
       router.createUpdateObject(req.body),
-      {new: true,fields: "nombre matricula correo promedio calificacionCurso campus semestre carrera cumplePromedio esTutor materias"},
+      {new: true},
       function(error, result) {
       if (error) {
         res.status(500).send("There was an error updating the document.");
@@ -221,7 +224,11 @@ router.createUpdateObject = function(req) {
   }
 
   if (req.materias != null) {
-    obj.materias = req.materias
+    obj.materias = req.materias;
+  }
+
+  if (req.periodo != null) {
+    obj.periodo = req.periodo;
   }
   console.log("update obj: " + obj);
   return obj;
@@ -254,7 +261,7 @@ router.post("/sendMail", function(req, res, next) {
   if (req.body.type == "curso") {
     // send correo para curso
     // get lista de correos
-    TutorModel.find({'cumplePromedio' : true}).exec()
+    TutorModel.find({'cumplePromedio' : true, 'campus' : { $in : req.body.campus} }).exec()
 
     .then(function(tutors) {
       var listaCorreos = [];
@@ -268,14 +275,15 @@ router.post("/sendMail", function(req, res, next) {
       return router.sendMail(correos);
     })
     .then(function(messageId){
-      res.status(200).send({"message":"Correos enviados."});
+      console.log("ya se mando");
+      res.status(200).send({"message":messageId});
     })
     
     .then(null, next);
   }
   else if (req.body.type == "inscripcion") {
     // send correo para inscripcion
-    TutorModel.find({'esTutor' : true}).exec()
+    TutorModel.find({'esTutor' : true, 'campus' : { $in : req.body.campus} }).exec()
 
     .then(function(tutors) {
       var listaCorreos = [];
