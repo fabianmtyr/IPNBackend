@@ -24,15 +24,6 @@ var tutorSchema = new mongoose.Schema({
 
 var TutorModel = mongoose.model('Tutors', tutorSchema);
 
-// // Spaces (Plazas de tutores) schema
-// var spacesSchema = new mongoose.Schema({
-//   campus: String,
-//   tutors: Number,
-//   staff: Number
-// });
-
-// var SpacesModel = mongoose.model('Spaces', spacesSchema);
-
 // ####### TUTOR ROUTES #######
 
 // Get a list of all available tutors
@@ -136,39 +127,7 @@ router.post("/remove", function(req, res, next) {
   });
 });
 
-// ###### PLAZAS ######
 
-// // Add spaces
-// router.post("/plazas/edit", function(req, res, next) {
-//   var plaza = {
-//     campus: req.body.campus,
-//     tutors: req.body.tutors,
-//     staff: req.body.staff
-//   };
-
-//   SpacesModel.findOneAndUpdate({'campus': req.body.campus}, 
-//     plaza,
-//     {new:true, fields: "campus tutors staff", upsert:true},
-//     function(error, result) {
-//       if (error) {
-//         res.status(500).send("There was an error updating the document.");
-//       } else {
-//         res.status(200).send(result);
-//       }
-//     });
-// });
-
-// // Lookup spaces
-// router.get("/plazas/list", function(req, res, next) {
-//   SpacesModel.find({}, function(error, result) {
-//     if (error) {
-//       res.status(500).send("There was an error finding the documents.");
-//     } else {
-//       // console.log(result);
-//       res.status(200).send(result);
-//     }
-//   });
-// });
 
 // Create update object
 router.createUpdateObject = function(req) {
@@ -238,7 +197,7 @@ router.get("/updateBb", function(req, res, next) {
   TutorModel.find({'cumplePromedio': true, 'calificacionCurso': {$exists:false}}, function(error, result) {
     if (result.length > 0) {
       for (var i = 0; i < result.length; i++) {
-        var grade = Math.random()*31+70;
+        var grade = Math.round(Math.random()*31+70);
         result[i].calificacionCurso = grade;
         if (grade >= 80) {
           result[i].esTutor = true;
@@ -257,90 +216,99 @@ router.get("/updateBb", function(req, res, next) {
   });
 });
 
+// SEND MAIL: Sends email to specified tutors.
 router.post("/sendMail", function(req, res, next) {
-  if (req.body.type == "curso") {
-    // send correo para curso
-    // get lista de correos
-    TutorModel.find({'cumplePromedio' : true, 'campus' : { $in : req.body.campus} }).exec()
-
-    .then(function(tutors) {
-      var listaCorreos = [];
-      tutors.forEach(function(tutor) {
-        listaCorreos.push(tutor.correo);
-      });
-      return listaCorreos;
-    })
-    .then(function(correos){
-      console.log(correos);
-      return router.sendMail(correos);
-    })
-    .then(function(messageId){
-      console.log("ya se mando");
-      res.status(200).send({"message":messageId});
-    })
-    
-    .then(null, next);
+  // Get type of email to send
+  var field = '';
+  if (req.body.type == "curso"){
+    field = 'cumplePromedio';
   }
   else if (req.body.type == "inscripcion") {
-    // send correo para inscripcion
-    TutorModel.find({'esTutor' : true, 'campus' : { $in : req.body.campus} }).exec()
-
-    .then(function(tutors) {
-      var listaCorreos = [];
-      tutors.forEach(function(tutor) {
-        listaCorreos.push(tutor.correo);
-      });
-      return listaCorreos;
-    })
-    .then(function(correos){
-      console.log(correos);
-      return router.sendMail(correos);
-    })
-    .then(function(messageId){
-      res.status(200).send({"message":messageId});
-    })
-    .then(null, next);
+    field = 'esTutor';
   }
+  else {
+    res.status(500).send({"message" : "No se puede mandar un email del tipo " + req.body.type});
+  }
+
+  // Find all tutors with that field set to true
+  TutorModel.find({[field] : true, 'campus' : { $in : req.body.campus} }).exec()
+  .then((tutors) => {
+    // Get all email addresses in an array
+    var emailList = [];
+    tutors.forEach(function(tutor) {
+      emailList.push(tutor.correo);
+    });
+    return emailList;
+  })
+  .then((correos) => {
+    // Send email
+    if (correos.length > 0) {
+      /***** ACTION NEEDED *****
+        Test account used here, this needs to be replaced with a real account and password
+          which will be the sender of the email. */
+      nodemailer.createTestAccount((err, account) => {
+        // create reusable transporter object using the default SMTP transport
+        let transporter = nodemailer.createTransport({
+            host: 'smtp.ethereal.email',
+            port: 587,
+            secure: false, // true for 465, false for other ports
+            auth: {
+                user: account.user, // generated ethereal user
+                pass: account.pass // generated ethereal password
+            }
+        });
+        
+        /***** ACTION NEEDED *****
+          Needs to be replaced with text of email. */
+        let mailOptions = {
+            from: '"PrepaNet" <prepanet@itesm.mx>', // sender address
+            to: correos.toString(), // list of receivers
+            subject: 'Hello', // Subject line
+            text: 'Hello world?', // plain text body
+            html: '<b>Hello world?</b>' // html body
+        };
+    
+        // Send mail with transport object
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                res.status(500).send({"message" : error});
+            }
+            /***** ACTION NEEDED *****
+              This needs to be removed and response message needs to change. */
+            console.log('Message sent: %s', info.messageId);
+            // Preview only available when sending through an Ethereal account
+            console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+            // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+            // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+
+            res.status(200).send({"message" : nodemailer.getTestMessageUrl(info)});
+        });
+      });
+    }
+    else {
+      res.status(200).send({"message" : "No hay candidatos que cumplan con el requisito para enviar correo."});
+    }
+  })
+  .then(null, next);
 });
 
-router.sendMail = function(mailList) {
-  if (mailList.length > 0) {
-    
-    nodemailer.createTestAccount((err, account) => {
-      // create reusable transporter object using the default SMTP transport
-      let transporter = nodemailer.createTransport({
-          host: 'smtp.ethereal.email',
-          port: 587,
-          secure: false, // true for 465, false for other ports
-          auth: {
-              user: account.user, // generated ethereal user
-              pass: account.pass // generated ethereal password
-          }
-      });
-  
-      // setup email data with unicode symbols
-      let mailOptions = {
-          from: '"PrepaNet" <prepanet@itesm.mx>', // sender address
-          to: mailList.toString(), // list of receivers
-          subject: 'Hello', // Subject line
-          text: 'Hello world?', // plain text body
-          html: '<b>Hello world?</b>' // html body
-      };
-  
-      // send mail with defined transport object
-      transporter.sendMail(mailOptions, (error, info) => {
-          if (error) {
-              return console.log(error);
-          }
-          console.log('Message sent: %s', info.messageId);
-          // Preview only available when sending through an Ethereal account
-          console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-          return nodemailer.getTestMessageUrl(info);
-          // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
-          // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
-      });
-    });
-  }
-}
+// QUERIES
+// Quien pasó curso
+router.get("/queries/aprobados", function(req, res, next) {
+  TutorModel.find({
+    'calificacionCurso' : { $gt : 80 }
+  })
+  .sort('calificacionCurso')
+  .select('matricula calificacionCurso esTutor')
+  .exec()
+  .then((tutors) => {
+    res.status(200).send(tutors);
+  })
+  .catch((err) => {
+    res.status(500).send(err);
+  })
+  .then(null, next);
+});
+
 
 module.exports = router;
