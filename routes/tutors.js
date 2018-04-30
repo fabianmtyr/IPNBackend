@@ -298,7 +298,7 @@ router.get("/queries/aprobados", function(req, res, next) {
   TutorModel.find({
     'calificacionCurso' : { $gt : 80 }
   })
-  .sort('calificacionCurso')
+  .sort('-calificacionCurso')
   .select('matricula calificacionCurso esTutor')
   .exec()
   .then((tutors) => {
@@ -310,5 +310,37 @@ router.get("/queries/aprobados", function(req, res, next) {
   .then(null, next);
 });
 
+// Materias seleccionadas de quienes si pasaron
+router.get("/queries/materias", function(req, res, next) {
+  TutorModel.find({
+    'materias' : { $ne : null },
+    'calificacionCurso' : { $gt : 80 }
+  })
+  .sort('-calificacionCurso')
+  .select('matricula calificacionCurso materias')
+  .exec()
+  .then((tutors) => {
+    res.status(200).send(tutors);
+  })
+  .catch((err) => {
+    res.status(500).send(err);
+  })
+  .then(null, next);
+});
+
+// Reporte de promedios
+router.get("/queries/promedios", function(req, res, next) {
+  TutorModel.find()
+  .sort('-promedio')
+  .select('matricula promedio cumplePromedio')
+  .exec()
+  .then((tutors) => {
+    res.status(200).send(tutors);
+  })
+  .catch((err) => {
+    res.status(500).send(err);
+  })
+  .then(null, next);
+});
 
 module.exports = router;
