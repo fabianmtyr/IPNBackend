@@ -5,7 +5,8 @@ var mongoose = require('mongoose');
 // Spaces (Plazas de tutores) schema
 var materiasSchema = new mongoose.Schema({
   clave: String,
-  nombre: String
+  nombre: String,
+  periodo: String
 });
 
 var MateriasModel = mongoose.model('Materias', materiasSchema);
@@ -16,12 +17,13 @@ var MateriasModel = mongoose.model('Materias', materiasSchema);
 router.post("/edit", function(req, res, next) {
   var materia = {
     clave: req.body.clave,
-    nombre: req.body.nombre
+    nombre: req.body.nombre,
+    periodo: req.body.periodo
   };
 
   MateriasModel.findOneAndUpdate({'clave': req.body.clave}, 
     materia,
-    {new:true, fields: "clave nombre", upsert:true},
+    {new:true, fields: "clave nombre periodo", upsert:true},
     function(error, result) {
       if (error) {
         res.status(500).send("There was an error updating the document.");
