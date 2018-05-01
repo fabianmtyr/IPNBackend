@@ -1,8 +1,7 @@
 {
-  "name": "Start on Heroku: Node.js",
-  "description": "A barebones Node.js app using Express 4",
-  "repository": "https://github.com/heroku/node-js-getting-started",
-  "logo": "https://cdn.rawgit.com/heroku/node-js-getting-started/master/public/node.svg",
+  "name": "Inscripcion PrepaNet Backend",
+  "description": "Backend that goes with the Inscripción PrepaNet App",
+  "repository": "https://github.com/fabianmty/IPNBackend",
   "keywords": ["node", "express", "heroku"],
   "image": "heroku/nodejs"
 }

@@ -1,15 +1,13 @@
 var express = require("express");
 var bodyParser = require("body-parser");
 var mongoose = require("mongoose");
-
+var cors = require("cors");
 var user = require("./routes/user.js");
 var tutors = require("./routes/tutors.js");
 var plazas = require("./routes/plazas.js");
 var materias = require("./routes/materias.js");
 
-// var blackboard = require("./routes/blackboard.js");
-var cors = require("cors");
-
+// Creates app
 var app = express();
 app.use(bodyParser.json());
 app.use(cors({credentials: true, origin: true}));
@@ -43,34 +41,9 @@ function handleError(res, reason, message, code) {
   res.status(code || 500).json({"error": message});
 }
 
-// app.use('/', index);
 app.use('/tutors', tutors);
 app.use('/user', user);
 app.use('/plazas', plazas);
 app.use('/materias', materias);
-// app.use('/blackboard', blackboard);
-
-// app.use(function(req, res, next) {
-//   res.header("Access-Control-Allow-Origin", "https://localhost:4200");
-//   res.header("Access-Control-Allow-Credentials", true);
-//   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-//   res.header("Access-Control-Allow-Headers", 'Origin,X-Requested-With,Content-Type,Accept,content-type,application/json');
-//   next();
-// });
-
-// app.use(function(_, res, __) {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,PATCH');
-//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, Content-Length");
-//   res.header("Access-Control-Allow-Credentials",  "true");
-  
-//   res.status(404).json("Not found");
-// });
-
-// app.all('/', function(req, res, next) {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header("Access-Control-Allow-Headers", "X-Requested-With");
-//   next()
-// });
 
 module.exports = app;

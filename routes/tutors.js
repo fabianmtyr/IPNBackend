@@ -30,7 +30,7 @@ var TutorModel = mongoose.model('Tutors', tutorSchema);
 router.get("/list", function(req, res, next) {
   TutorModel.find({}, function(error, result) {
     if (error) {
-      res.status(500).send("There was an error finding the documents.");
+      res.status(500).send({"message" : "There was an error finding the documents."});
     } 
     else {
       res.status(200).send(result);
@@ -126,72 +126,6 @@ router.post("/remove", function(req, res, next) {
     }
   });
 });
-
-
-
-// Create update object
-router.createUpdateObject = function(req) {
-  var obj = {};
-  console.log("req body : " + req.body);
-  if (req.nombre != null) {
-    obj.nombre = {};
-    obj.nombre.nombre = req.nombre.nombre;
-    obj.nombre.apellido = req.nombre.apellido;
-  }
-
-  if (req.matricula != null) {
-    obj.matricula = req.matricula;
-  }
-
-  if (req.correo != null) {
-    obj.correo = req.correo;
-  }
-
-  if (req.campus != null) {
-    obj.campus = req.campus;
-  }
-
-  if (req.semestre != null) {
-    obj.semestre = req.semestre;
-  }
-
-  if (req.carrera != null) {
-    obj.carrera = req.carrera;
-  }
-
-  // If average, also pre-add isElegible
-  if (req.promedio != null) {
-    obj.promedio = req.promedio;
-    if (parseInt(req.promedio, 10) >= 85) {
-      obj.cumplePromedio = true;
-    }
-    else {
-      obj.cumplePromedio = false;
-    }
-  }
-
-  if (req.calificacionCurso != null) {
-    obj.calificacionCurso = req.calificacionCurso;
-  }
-  
-  if (req.cumplePromedio != null) {
-    obj.cumplePromedio = req.cumplePromedio;
-  }
-
-  if (req.esTutor != null) {
-    obj.esTutor = req.esTutor;
-  }
-
-  if (req.materias != null) {
-    obj.materias = req.materias;
-  }
-
-  if (req.periodo != null) {
-    obj.periodo = req.periodo;
-  }
-  console.log("update obj: " + obj);
-  return obj;
-};
 
 router.get("/updateBb", function(req, res, next) {
   TutorModel.find({'cumplePromedio': true, 'calificacionCurso': {$exists:false}}, function(error, result) {
@@ -342,5 +276,70 @@ router.get("/queries/promedios", function(req, res, next) {
   })
   .then(null, next);
 });
+
+// HELPERS
+
+// Create update object
+router.createUpdateObject = function(req) {
+  var obj = {};
+  if (req.nombre != null) {
+    obj.nombre = {};
+    obj.nombre.nombre = req.nombre.nombre;
+    obj.nombre.apellido = req.nombre.apellido;
+  }
+
+  if (req.matricula != null) {
+    obj.matricula = req.matricula;
+  }
+
+  if (req.correo != null) {
+    obj.correo = req.correo;
+  }
+
+  if (req.campus != null) {
+    obj.campus = req.campus;
+  }
+
+  if (req.semestre != null) {
+    obj.semestre = req.semestre;
+  }
+
+  if (req.carrera != null) {
+    obj.carrera = req.carrera;
+  }
+
+  // If average, also pre-add isElegible
+  if (req.promedio != null) {
+    obj.promedio = req.promedio;
+    if (parseInt(req.promedio, 10) >= 85) {
+      obj.cumplePromedio = true;
+    }
+    else {
+      obj.cumplePromedio = false;
+    }
+  }
+
+  if (req.calificacionCurso != null) {
+    obj.calificacionCurso = req.calificacionCurso;
+  }
+  
+  if (req.cumplePromedio != null) {
+    obj.cumplePromedio = req.cumplePromedio;
+  }
+
+  if (req.esTutor != null) {
+    obj.esTutor = req.esTutor;
+  }
+
+  if (req.materias != null) {
+    obj.materias = req.materias;
+  }
+
+  if (req.periodo != null) {
+    obj.periodo = req.periodo;
+  }
+  return obj;
+};
+
 
 module.exports = router;

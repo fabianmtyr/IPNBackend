@@ -4,7 +4,7 @@ var mongoose = require('mongoose');
 var bcrypt = require('bcrypt-nodejs');
 var SALT_WORK_FACTOR = 10;
 
-// Mongoose
+// Users (Admins)
 var userSchema = new mongoose.Schema({
   email: String,
   password: String,
@@ -23,7 +23,6 @@ userSchema.pre('save', function(next){
     if (err) return next(err);
     bcrypt.hash(user.password, salt, null, function(err, hash) {
       if (err) return next(err);
-
       user.password = hash;
       next();
     });
@@ -41,7 +40,7 @@ router.post("/register", function(req, res, next) {
 
   newUser.save(function (error) {
     if (error) {
-      res.status(500).send("Error en la base de datos.");
+      res.status(500).send({"message" : "There was an error saving the document on the database."});
     } else {
       res.status(201).send(newUser);
     }
@@ -56,6 +55,7 @@ router.post("/login", function(req, res, next) {
     name: "",
     campus: ""
   };
+  
   UserModel.findOne({'email': req.body.email}, function(err, user) {
     if (err) {
       res.status(500).send("Error en la base de datos.");
