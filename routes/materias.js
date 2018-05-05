@@ -44,7 +44,7 @@ router.get("/list", function(req, res, next) {
 
 // Remove
 router.post("/remove", function(req, res, next) {
-  TutorModel.findOneAndRemove({'clave' : req.body.clave}, function(error, response) {
+  MateriasModel.findOneAndRemove({'clave' : req.body.clave}, function(error, response) {
     if (error) {
       res.status(500).send("There was an error removing the element.");
     }
